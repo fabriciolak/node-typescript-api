@@ -1,5 +1,7 @@
-import axios, { AxiosError, AxiosStatic } from 'axios'
+import * as HTTPUtil from '@src/util/request'
 import { InternalError } from '@src/util/errors/internal-error';
+import { AxiosError } from 'axios';
+import config, { IConfig } from 'config'
 
 export interface StormGlassPointSource {
   [key: string]: number;
@@ -46,39 +48,37 @@ export class StormGlassResponseError extends InternalError {
   }
 }
 
+const stormGlassResourceConfig: IConfig = config.get('App.resources.StormGlass')
+
 export class StormGlass {
   readonly stormGlassApiParams =
     'swellDirection,swellHeight,swellPeriod,waveDirection,waveHeight,windDirection,windSpeed'
   readonly stormGlassApiSource = 'noaa'
 
-  constructor(protected request: AxiosStatic) { }
+  constructor(protected request = new HTTPUtil.Request()) { }
 
   public async fetchPoints(lat: number, lng: number): Promise<ForecastPoint[]> {
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
-        `https://api.stormglass.io/v2/weather/point?lat=${lat}&lng=${lng}&params=${this.stormGlassApiParams}&source=${this.stormGlassApiSource}`,
+        `${stormGlassResourceConfig.get('apiUrl')}/v2/weather/point?lat=${lat}&lng=${lng}&params=${this.stormGlassApiParams}&source=${this.stormGlassApiSource}`,
         {
           headers: {
-            Authorization: 'token',
+            Authorization: stormGlassResourceConfig.get('apiToken'),
           }
         }
       )
 
       return this.normalizeResponse(response.data)
     } catch (err) {
-      const axiosError = err as AxiosError;
-      if (
-        axiosError instanceof Error &&
-        axiosError.response &&
-        axiosError.response.status
-      ) {
+      if (err instanceof Error && HTTPUtil.Request.isRequestError(err as AxiosError)) {
+        const error = HTTPUtil.Request.extractErrorData(err as AxiosError);
+
         throw new StormGlassResponseError(
-          `Error: ${JSON.stringify(axiosError.response.data)} Code: ${axiosError.response.status
-          }`
+          `Error: ${JSON.stringify(error.data)} Code: ${error.status}`
         );
       }
 
-      throw new ClientRequestError((err as { message: any }).message)
+      throw new ClientRequestError((err as { message: any }).message);
     }
   }
 

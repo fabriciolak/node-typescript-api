@@ -40,8 +40,10 @@
   },
   "dependencies": {
     "@overnightjs/core": "^1.7.6",
+    "@types/config": "^0.0.40",
     "axios": "^0.24.0",
     "body-parser": "^1.20.3",
+    "config": "^3.3.6",
     "express": "^4.21.0",
     "module-alias": "^2.2.3"
   }
