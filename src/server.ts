@@ -6,6 +6,7 @@ import { Application } from 'express';
 import * as database from '@src/database'
 import { ForecastController } from '@src/controllers/forecast';
 import { BeachesController } from '@src/controllers/beaches';
+import { UsersController } from '@src/controllers/users';
 
 export class SetupServer extends Server {
   constructor(private port = 3000) {
@@ -16,6 +17,12 @@ export class SetupServer extends Server {
     this.setupExpress();
     this.setupController();
     await this.databaseSetup();
+  }
+
+  public start(): void {
+    this.app.listen(this.port, () => {
+      console.info('Server listening on port: ', this.port);
+    })
   }
 
   public getApp(): Application {
@@ -37,9 +44,11 @@ export class SetupServer extends Server {
   private setupController(): void {
     const forecastController = new ForecastController();
     const beachesController = new BeachesController();
+    const usersController = new UsersController()
     this.addControllers([
       forecastController,
-      beachesController
+      beachesController,
+      usersController
     ]);
   }
 }
