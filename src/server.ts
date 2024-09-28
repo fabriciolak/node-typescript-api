@@ -7,9 +7,12 @@ import * as database from '@src/database'
 import { ForecastController } from '@src/controllers/forecast';
 import { BeachesController } from '@src/controllers/beaches';
 import { UsersController } from '@src/controllers/users';
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export class SetupServer extends Server {
-  constructor(private port = 3000) {
+  constructor(private port = process.env.PORT || 3000) {
     super();
   }
 
