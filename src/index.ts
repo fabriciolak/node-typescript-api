@@ -6,5 +6,3 @@ import config from 'config'
   await server.init()
   server.start()
 })()
-
-console.log('hello')
